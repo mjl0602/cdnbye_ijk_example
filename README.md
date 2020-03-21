@@ -7,13 +7,13 @@ cdnbye的ijk版播放器example。由于ijk的安装远没有官方的videoplaye
 - [X] 增加并管理任意链接列表
 - [X] 使用flutter_ijk播放器播放自定义的视频链接
 - [X] 在播放视频时，可以实时查看cdnbye的p2p效果
+- [X] 自定义token，默认为free
+- [X] 自定义landscape方向
+- [X] 自定义是否自动播放
 
 # TODO
 
-- [ ] 设置token，目前固定为free
 - [ ] 播放本地文件
-- [ ] 用户设置：landscape方向
-- [ ] 用户设置：是否自动播放
 - [ ] 用户设置：是否硬解码
 
 
