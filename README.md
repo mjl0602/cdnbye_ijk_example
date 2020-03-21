@@ -2,6 +2,17 @@
 
 cdnbye的ijk版播放器example。由于ijk的安装远没有官方的videoplayer快，所以单独作为一个仓库，而不是作为pub库中随附的example。
 
+# 功能
+
+- [X] 增加并管理任意链接列表
+- [X] 使用flutter_ijk播放器播放自定义的视频链接
+- [X] 在播放视频时，可以实时查看cdnbye的p2p效果
+
+# TODO
+
+- [ ] 设置token，目前固定为free
+- [ ] 播放本地文件
+
 # ijkplayer
 
 [![pub package](https://img.shields.io/pub/v/flutter_ijkplayer.svg)](https://pub.dartlang.org/packages/flutter_ijkplayer)
