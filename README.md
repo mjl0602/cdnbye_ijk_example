@@ -12,6 +12,10 @@ cdnbye的ijk版播放器example。由于ijk的安装远没有官方的videoplaye
 
 - [ ] 设置token，目前固定为free
 - [ ] 播放本地文件
+- [ ] 用户设置：landscape方向
+- [ ] 用户设置：是否自动播放
+- [ ] 用户设置：是否硬解码
+
 
 # ijkplayer
 
