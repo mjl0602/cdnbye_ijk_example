@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.0.1+1
+version: 0.0.2+1
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -35,7 +35,7 @@ dependencies:
   left_scroll_actions: ^1.4.0
   # 由于网络原因，cdnbye的最新版可能并不能及时上传pub，若要使用最新版，请使用github版本
   # cdnbye: ^0.4.1
-  cdnbye: 
+  cdnbye:
     # path: /Users/majialun/Desktop/code/P2P-Engine/flutter-p2p-engine
     git:
       url: https://github.com/cdnbye/flutter-p2p-engine.git
@@ -61,10 +61,14 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #  - images/a_dot_burr.jpeg
-  #  - images/a_dot_ham.jpeg
+  assets:
+    # assets-generator-begin
+    # assets/*
+    - assets/example.png
+    - assets/logo.png
+    # assets-generator-end
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
   # For details regarding adding assets from package dependencies, see

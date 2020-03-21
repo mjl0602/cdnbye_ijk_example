@@ -1,8 +1,11 @@
 import 'package:cdnbye_ijk_example/model/videoResource.dart';
+import 'package:cdnbye_ijk_example/pages/settingPage.dart';
+import 'package:cdnbye_ijk_example/pages/videoAdd.dart';
 import 'package:cdnbye_ijk_example/pages/videoPage.dart';
 import 'package:cdnbye_ijk_example/style/color.dart';
 import 'package:cdnbye_ijk_example/style/size.dart';
 import 'package:cdnbye_ijk_example/style/text.dart';
+import 'package:cdnbye_ijk_example/views/confirmDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:left_scroll_actions/cupertinoLeftScroll.dart';
 import 'package:tapped/tapped.dart';
@@ -19,7 +22,7 @@ class _ListPageState extends State<ListPage> {
   addVideo() async {
     await showDialog(
       context: context,
-      builder: (context) => VideoAddDialog(),
+      builder: (context) => VideoInfoEditDialog(),
     );
     setState(() {
       _list = VideoResource.all();
@@ -49,52 +52,92 @@ class _ListPageState extends State<ListPage> {
 
   @override
   Widget build(BuildContext context) {
+    var body = ListView.builder(
+      itemCount: _list.length,
+      itemBuilder: (BuildContext context, int index) {
+        return CupertinoLeftScroll(
+          key: Key(_list[index].title),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (ctx) => VideoPage(
+                  resource: _list[index],
+                ),
+              ),
+            );
+          },
+          child: _Row(resource: _list[index]),
+          opacityChange: true,
+          buttons: <Widget>[
+            _LeftScrollButton(
+              icon: Icons.delete_forever,
+              title: '删除',
+              color: ColorPlate.red,
+              onTap: () async {
+                bool delete = await confirm(
+                  context,
+                  type: ConfirmType.danger,
+                  title: '删除记录',
+                  content: '被删除的信息将无法恢复',
+                  ok: '删除',
+                );
+                if (delete == true) {
+                  setState(() {
+                    _list[index].delete();
+                    _list = VideoResource.all();
+                  });
+                }
+              },
+            ),
+            _LeftScrollButton(
+              icon: Icons.edit,
+              title: '编辑',
+              color: ColorPlate.mainColor,
+              onTap: () async {
+                await showDialog(
+                  context: context,
+                  builder: (context) => VideoInfoEditDialog(
+                    resource: _list[index],
+                  ),
+                );
+                setState(() {
+                  _list = VideoResource.all();
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text('列表'),
         actions: <Widget>[
           _ActionIconButton(
-            icon: Icons.add,
+            icon: Icons.add_box,
             onTap: addVideo,
-          )
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: _list.length,
-        itemBuilder: (BuildContext context, int index) {
-          return CupertinoLeftScroll(
-            key: Key(_list[index].title),
-            onTap: () {
-              Navigator.of(context).push(
+          ),
+          _ActionIconButton(
+            icon: Icons.settings,
+            onTap: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (ctx) => VideoPage(
-                    resource: _list[index],
-                  ),
+                  builder: (ctx) => SettingPage(),
                 ),
               );
+              setState(() {
+                _list = VideoResource.all();
+              });
             },
-            child: _Row(resource: _list[index]),
-            buttons: <Widget>[
-              _LeftScrollButton(
-                icon: Icons.delete_forever,
-                title: '删除',
-                color: ColorPlate.red,
-                onTap: () {
-                  setState(() {
-                    _list[index].delete();
-                    _list = VideoResource.all();
-                  });
-                },
-              ),
-            ],
-          );
-        },
+          ),
+        ],
       ),
+      body: body,
     );
   }
 }
 
-// 一行设备
+/// 一行信息
 class _Row extends StatelessWidget {
   final VideoResource resource;
   const _Row({
@@ -104,6 +147,27 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var column = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          padding: EdgeInsets.only(top: 2),
+          child: StText.big(
+            resource.title,
+            enableOffset: true,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
+          child: StText.small(
+            resource.url,
+            style: TextStyle(
+              fontSize: SysSize.tiny,
+            ),
+          ),
+        ),
+      ],
+    );
     return Container(
       margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
       padding: EdgeInsets.fromLTRB(16, 10, 0, 12),
@@ -124,30 +188,10 @@ class _Row extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(top: 2),
-                  child: StText.big(
-                    resource.title,
-                    enableOffset: true,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
-                  child: StText.small(
-                    resource.url,
-                    style: TextStyle(
-                      fontSize: SysSize.tiny,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: column,
           ),
           Container(
-            child: Icon(Icons.video_library),
+            child: resource.isLive ? Icon(Icons.live_tv) : Container(),
           ),
           Container(
             width: 3,
@@ -199,7 +243,7 @@ class _LeftScrollButton extends StatelessWidget {
       onTap: onTap,
       child: Center(
         child: Container(
-          height: 60,
+          height: 64,
           padding: EdgeInsets.only(top: 6),
           margin: EdgeInsets.only(right: 12),
           decoration: shapeDecoration,
@@ -207,7 +251,7 @@ class _LeftScrollButton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 child: Icon(
                   icon ?? Icons.help,
                   size: 24,
@@ -248,151 +292,13 @@ class _ActionIconButton extends StatelessWidget {
       onLongTap: onLongTap,
       child: Container(
         color: Color(0),
-        padding: EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+        padding: EdgeInsets.fromLTRB(0, 12, 24, 12),
         child: Icon(
           icon ?? Icons.help,
           size: 24,
           color: ColorPlate.white,
         ),
       ),
-    );
-  }
-}
-
-class _AlertUrlErrorDialog extends StatelessWidget {
-  const _AlertUrlErrorDialog({
-    Key key,
-    @required this.url,
-  }) : super(key: key);
-
-  final String url;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: Text('地址$url 可能不能使用p2p加速'),
-      actions: <Widget>[
-        Tapped(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Text(
-              '取消',
-              style: TextStyle(color: Colors.blue),
-            ),
-          ),
-          onTap: () {
-            Navigator.of(context).pop(false);
-          },
-        ),
-        Tapped(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Text(
-              '仍然继续',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-          onTap: () {
-            Navigator.of(context).pop(true);
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class VideoAddDialog extends StatefulWidget {
-  @override
-  _VideoAddDialogState createState() => _VideoAddDialogState();
-}
-
-class _InputHelper {
-  TextEditingController controller = TextEditingController();
-  FocusNode focusNode = FocusNode();
-  String get text => controller.value.text;
-}
-
-class _VideoAddDialogState extends State<VideoAddDialog> {
-  _InputHelper title = _InputHelper();
-  _InputHelper url = _InputHelper();
-  bool isLive = false;
-
-  _submit() async {
-    if (!url.text.contains('.m3u8')) {
-      var res = await showDialog(
-        context: context,
-        builder: (context) => _AlertUrlErrorDialog(url: url.text),
-      );
-      if (res != true) {
-        return;
-      }
-    }
-    VideoResource(
-      title: title.text,
-      url: url.text,
-    )..save();
-    Navigator.of(context).pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SimpleDialog(
-      title: Text('添加一个视频地址'),
-      contentPadding: EdgeInsets.symmetric(horizontal: 20),
-      children: <Widget>[
-        TextField(
-          focusNode: title.focusNode,
-          controller: title.controller,
-          decoration: InputDecoration(
-            labelText: '标题',
-            labelStyle: StandardTextStyle.normal,
-          ),
-          onSubmitted: (text) {
-            FocusScope.of(context).requestFocus(url.focusNode);
-          },
-        ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: StText.normal('直播'),
-            ),
-            Switch(
-              value: isLive,
-              onChanged: (v) => setState(() => isLive = v),
-            ),
-          ],
-        ),
-        TextField(
-          focusNode: url.focusNode,
-          controller: url.controller,
-          decoration: InputDecoration(
-            labelText: '地址',
-            labelStyle: StandardTextStyle.normal,
-          ),
-          onSubmitted: (text) {
-            _submit();
-          },
-        ),
-        Container(
-          alignment: Alignment.centerRight,
-          child: Tapped(
-            child: Container(
-              margin: EdgeInsets.all(12),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text(
-                '确认',
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-            onTap: () {
-              _submit();
-            },
-          ),
-        )
-      ],
     );
   }
 }

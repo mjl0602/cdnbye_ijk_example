@@ -12,7 +12,7 @@ class ColorPlate {
   static const Color gray = const Color(0xff9B9B9B);
   static const Color lightGray = const Color(0xfff5f5f4);
 
-  static const Color mainColor = const Color(0xff3D6BDC);
+  static const Color mainColor = const Color(0xFF2196F3);
   static const Color red = const Color(0xffF24C61);
   static const Color elockGreen = const Color(0xff37C628);
 }

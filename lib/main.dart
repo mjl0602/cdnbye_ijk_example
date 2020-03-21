@@ -1,5 +1,6 @@
 import 'package:cdnbye/cdnbye.dart';
 import 'package:cdnbye_ijk_example/global/p2pListener.dart';
+import 'package:cdnbye_ijk_example/global/userDefault.dart';
 import 'package:cdnbye_ijk_example/pages/listPage.dart';
 import 'package:cdnbye_ijk_example/style/theme.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +12,8 @@ void main() async {
   var uri = await getTemporaryDirectory();
   LocalCacheSync.instance.setCachePath(uri.path);
   Cdnbye.init(
-    'free', // replace with your token
-    config: P2pConfig(
-      logLevel: P2pLogLevel.debug,
-    ),
+    UserDefault.token.value,
+    config: P2pConfig(logLevel: P2pLogLevel.none),
     infoListener: (Map<dynamic, dynamic> info) {
       // 写入消息
       P2pGlobalListener().videoInfo.value = info.cast<String, dynamic>();

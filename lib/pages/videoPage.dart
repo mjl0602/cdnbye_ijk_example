@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:cdnbye/cdnbye.dart';
 import 'package:cdnbye_ijk_example/global/p2pListener.dart';
+import 'package:cdnbye_ijk_example/global/userDefault.dart';
 import 'package:cdnbye_ijk_example/model/videoResource.dart';
 import 'package:cdnbye_ijk_example/style/color.dart';
 import 'package:cdnbye_ijk_example/style/text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:tapped/tapped.dart';
 
@@ -36,9 +40,11 @@ class _VideoPageState extends State<VideoPage> {
     });
     var sourceUrl = widget.resource.url;
     var url = await Cdnbye.parseStreamURL(sourceUrl);
-    controller.setAutoPlay();
     await controller.setDataSource(DataSource.network(url));
-    await controller.play();
+    if (UserDefault.autoplay.value) {
+      controller.setAutoPlay();
+      await controller.play();
+    }
     setState(() {});
   }
 
@@ -61,7 +67,11 @@ class _VideoPageState extends State<VideoPage> {
           fullScreenType: FullScreenType.rotateScreen,
           onFullScreen: (fullScreen) {
             if (fullScreen) {
-              setLandScapeLeft();
+              if (UserDefault.landscapeLeft.value) {
+                setLandScapeLeft();
+              } else {
+                setLandScapeRight();
+              }
             } else {
               portraitUp();
             }
@@ -88,7 +98,7 @@ class _VideoPageState extends State<VideoPage> {
     Widget actions = Row(
       children: <Widget>[
         ActionButton(
-          color: Colors.blueAccent,
+          color: Colors.redAccent,
           icon: Icons.pan_tool,
           title: 'Stop P2P',
           onTap: () async {
@@ -96,31 +106,31 @@ class _VideoPageState extends State<VideoPage> {
           },
         ),
         ActionButton(
-          color: Colors.blueAccent,
+          color: Colors.green,
           icon: Icons.cast_connected,
           title: 'Restart P2P',
           onTap: () async {
             await Cdnbye.restartP2p();
           },
         ),
-        ActionButton(
-          color: Colors.orangeAccent,
-          icon: Icons.replay,
-          title: 'Replay',
-          onTap: () async {
-            // position = 0;
-            // await vpController.seekTo(Duration(seconds: 0));
-            // vpController.play();
-          },
-        ),
-        ActionButton(
-          color: Colors.redAccent,
-          icon: Icons.settings_power,
-          title: 'Reload',
-          onTap: () async {
-            // _loadVideo();
-          },
-        ),
+        // ActionButton(
+        //   color: Colors.orangeAccent,
+        //   icon: Icons.replay,
+        //   title: 'Replay',
+        //   onTap: () async {
+        //     // position = 0;
+        //     // await vpController.seekTo(Duration(seconds: 0));
+        //     // vpController.play();
+        //   },
+        // ),
+        // ActionButton(
+        //   color: Colors.redAccent,
+        //   icon: Icons.settings_power,
+        //   title: 'Reload',
+        //   onTap: () async {
+        //     // _loadVideo();
+        //   },
+        // ),
       ],
     );
 
@@ -184,6 +194,25 @@ class _VideoPageState extends State<VideoPage> {
 
   setLandScapeLeft() async {
     await IjkManager.setLandScape();
+  }
+
+  setLandScapeRight() async {
+    if (Platform.isAndroid) {
+      await SystemChrome.setEnabledSystemUIOverlays([]);
+      await SystemChrome.setPreferredOrientations(
+        [
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ],
+      );
+    } else if (Platform.isIOS) {
+      await IjkManager.setSupportOrientation([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+
+      IjkManager.setCurrentOrientation(DeviceOrientation.landscapeRight);
+    }
   }
 
   portraitUp() async {
