@@ -31,8 +31,9 @@ class _SettingPageState extends State<SettingPage> {
             ),
           ),
           _Row(
-            title: 'Token: ',
+            title: 'Token(重启生效): ',
             right: Container(
+              constraints: BoxConstraints(maxWidth: 160),
               padding: EdgeInsets.all(12),
               child: StText.normal(
                 UserDefault.token.value,
