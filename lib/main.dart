@@ -1,6 +1,7 @@
 import 'package:cdnbye/cdnbye.dart';
 import 'package:cdnbye_ijk_example/global/p2pListener.dart';
 import 'package:cdnbye_ijk_example/pages/listPage.dart';
+import 'package:cdnbye_ijk_example/style/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,9 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CDNBYE IJK',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: MyTheme.standard,
       home: ListPage(),
     );
   }

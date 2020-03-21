@@ -1,6 +1,10 @@
 import 'package:cdnbye_ijk_example/model/videoResource.dart';
 import 'package:cdnbye_ijk_example/pages/videoPage.dart';
+import 'package:cdnbye_ijk_example/style/color.dart';
+import 'package:cdnbye_ijk_example/style/size.dart';
+import 'package:cdnbye_ijk_example/style/text.dart';
 import 'package:flutter/material.dart';
+import 'package:left_scroll_actions/cupertinoLeftScroll.dart';
 import 'package:tapped/tapped.dart';
 
 class ListPage extends StatefulWidget {
@@ -9,86 +13,250 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
-  List<VideoResource> get _list => [
-        VideoResource(
-          title: '豹子头林冲之山神庙',
-          image: 'http://cn2.3days.cc/1580551147538598.jpeg',
-          description:
-              '山神庙，林冲抚摸着冰冷冷的长枪，现在只有倚靠这个伙伴了，陆谦已经追到跟前，长枪对单刀，昔日较场两人交手的情景出现在眼前，同样的一招，这次陆谦却永远倒在林冲枪下。所有恩怨都了结于刀枪下，林冲一杆长枪在肩挑着酒葫芦如孤云野鹤般走在白雪的旷野中，朔风紧起，又见雪花纷纷扬扬……',
-          url:
-              'http://cn6.qxreader.com/hls/20200201/e987a0e00e1a8431ac408032ba023958/1580550680/index.m3u8',
-        ),
-      ];
+  List<VideoResource> _list = [];
 
-  _toCustomVideoPage() async {
-    String url = await showDialog(
+  // 添加电影到本地
+  addVideo() async {
+    await showDialog(
       context: context,
-      builder: (context) => _InputDialog(),
+      builder: (context) => VideoAddDialog(),
     );
-    if (url == null) {
-      return;
+    setState(() {
+      _list = VideoResource.all();
+    });
+  }
+
+  @override
+  void initState() {
+    _list = VideoResource.all();
+    if (_list.length == 0) {
+      VideoResource(
+        title: '豹子头林冲之山神庙',
+        url:
+            'http://cn6.qxreader.com/hls/20200201/e987a0e00e1a8431ac408032ba023958/1580550680/index.m3u8',
+      )..save();
     }
-    if (!url.contains('.m3u8')) {
-      var res = await showDialog(
-        context: context,
-        builder: (context) => _AlertUrlErrorDialog(url: url),
-      );
-      if (res != true) {
-        return;
-      }
-    }
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      return VideoPage(
-        resource: VideoResource(
-          title: url.split('/').last,
-          image: '',
-          description: '自定视频',
-          url: url,
-        ),
-      );
-    }));
+    setState(() {
+      _list = VideoResource.all();
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var customUrlButton = Tapped(
-      child: Container(
-        height: 44,
-        color: Color(0xfff5f5f4),
-        padding: EdgeInsets.symmetric(horizontal: 24),
-        child: Row(
-          children: <Widget>[
-            Icon(
-              Icons.video_library,
-              size: 16,
-            ),
-            Container(width: 4),
-            Expanded(child: Text('使用自定义地址播放')),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 12,
-            ),
-          ],
-        ),
-      ),
-      onTap: _toCustomVideoPage,
-    );
     return Scaffold(
       appBar: AppBar(
         title: Text('列表'),
+        actions: <Widget>[
+          _ActionIconButton(
+            icon: Icons.add,
+            onTap: addVideo,
+          )
+        ],
       ),
-      body: Column(
-        children: <Widget>[
-          customUrlButton,
-          Expanded(
-            child: ListView.builder(
-              itemCount: _list.length,
-              itemBuilder: (BuildContext context, int index) {
-                return VideoResourceRow(resource: _list[index]);
-              },
-            ),
+      body: ListView.builder(
+        itemCount: _list.length,
+        itemBuilder: (BuildContext context, int index) {
+          return CupertinoLeftScroll(
+            key: Key(_list[index].title),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => VideoPage(
+                    resource: _list[index],
+                  ),
+                ),
+              );
+            },
+            child: _Row(resource: _list[index]),
+            buttons: <Widget>[
+              _LeftScrollButton(
+                icon: Icons.delete_forever,
+                title: '删除',
+                color: ColorPlate.red,
+                onTap: () {
+                  setState(() {
+                    _list[index].delete();
+                    _list = VideoResource.all();
+                  });
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// 一行设备
+class _Row extends StatelessWidget {
+  final VideoResource resource;
+  const _Row({
+    Key key,
+    this.resource,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+      padding: EdgeInsets.fromLTRB(16, 10, 0, 12),
+      decoration: ShapeDecoration(
+        color: ColorPlate.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+        shadows: [
+          BoxShadow(
+            color: ColorPlate.black.withOpacity(0.02),
+            offset: Offset(0, 2),
+            blurRadius: 6,
           ),
         ],
+      ),
+      width: double.infinity,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(top: 2),
+                  child: StText.big(
+                    resource.title,
+                    enableOffset: true,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
+                  child: StText.small(
+                    resource.url,
+                    style: TextStyle(
+                      fontSize: SysSize.tiny,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            child: Icon(Icons.video_library),
+          ),
+          Container(
+            width: 3,
+            height: 24,
+            margin: EdgeInsets.only(
+              right: 4,
+              left: 8,
+            ),
+            decoration: BoxDecoration(
+              color: ColorPlate.lightGray,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// 左滑的按钮样式
+class _LeftScrollButton extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final Function onTap;
+  const _LeftScrollButton({
+    Key key,
+    this.title,
+    this.icon,
+    this.onTap,
+    this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var shapeDecoration = ShapeDecoration(
+      color: ColorPlate.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+      shadows: [
+        BoxShadow(
+          color: ColorPlate.black.withOpacity(0.02),
+          offset: Offset(0, 2),
+          blurRadius: 6,
+        ),
+      ],
+    );
+    return Tapped(
+      onTap: onTap,
+      child: Center(
+        child: Container(
+          height: 60,
+          padding: EdgeInsets.only(top: 6),
+          margin: EdgeInsets.only(right: 12),
+          decoration: shapeDecoration,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Icon(
+                  icon ?? Icons.help,
+                  size: 24,
+                  color: color ?? ColorPlate.darkGray,
+                ),
+              ),
+              StText.small(
+                title ?? '???',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: color ?? ColorPlate.darkGray,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// AppBar的按钮
+class _ActionIconButton extends StatelessWidget {
+  final IconData icon;
+  final Function onTap;
+  final Function onLongTap;
+  const _ActionIconButton({
+    Key key,
+    this.icon,
+    this.onTap,
+    this.onLongTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Tapped(
+      onTap: onTap,
+      onLongTap: onLongTap,
+      child: Container(
+        color: Color(0),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        child: Icon(
+          icon ?? Icons.help,
+          size: 24,
+          color: ColorPlate.white,
+        ),
       ),
     );
   }
@@ -136,34 +304,76 @@ class _AlertUrlErrorDialog extends StatelessWidget {
   }
 }
 
-class _InputDialog extends StatefulWidget {
-  const _InputDialog({
-    Key key,
-  }) : super(key: key);
-
+class VideoAddDialog extends StatefulWidget {
   @override
-  __InputDialogState createState() => __InputDialogState();
+  _VideoAddDialogState createState() => _VideoAddDialogState();
 }
 
-class __InputDialogState extends State<_InputDialog> {
-  TextEditingController _controller = TextEditingController();
+class _InputHelper {
+  TextEditingController controller = TextEditingController();
+  FocusNode focusNode = FocusNode();
+  String get text => controller.value.text;
+}
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+class _VideoAddDialogState extends State<VideoAddDialog> {
+  _InputHelper title = _InputHelper();
+  _InputHelper url = _InputHelper();
+  bool isLive = false;
+
+  _submit() async {
+    if (!url.text.contains('.m3u8')) {
+      var res = await showDialog(
+        context: context,
+        builder: (context) => _AlertUrlErrorDialog(url: url.text),
+      );
+      if (res != true) {
+        return;
+      }
+    }
+    VideoResource(
+      title: title.text,
+      url: url.text,
+    )..save();
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text('输入自定义地址'),
+      title: Text('添加一个视频地址'),
       contentPadding: EdgeInsets.symmetric(horizontal: 20),
       children: <Widget>[
         TextField(
-          controller: _controller,
+          focusNode: title.focusNode,
+          controller: title.controller,
+          decoration: InputDecoration(
+            labelText: '标题',
+            labelStyle: StandardTextStyle.normal,
+          ),
           onSubmitted: (text) {
-            Navigator.of(context).pop(_controller.text);
+            FocusScope.of(context).requestFocus(url.focusNode);
+          },
+        ),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: StText.normal('直播'),
+            ),
+            Switch(
+              value: isLive,
+              onChanged: (v) => setState(() => isLive = v),
+            ),
+          ],
+        ),
+        TextField(
+          focusNode: url.focusNode,
+          controller: url.controller,
+          decoration: InputDecoration(
+            labelText: '地址',
+            labelStyle: StandardTextStyle.normal,
+          ),
+          onSubmitted: (text) {
+            _submit();
           },
         ),
         Container(
@@ -178,83 +388,11 @@ class __InputDialogState extends State<_InputDialog> {
               ),
             ),
             onTap: () {
-              Navigator.of(context).pop(_controller.text);
+              _submit();
             },
           ),
         )
       ],
-    );
-  }
-}
-
-class VideoResourceRow extends StatelessWidget {
-  final VideoResource resource;
-  const VideoResourceRow({
-    Key key,
-    this.resource,
-  }) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    // 标题与梗概
-    Widget info = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          resource.title,
-          style: TextStyle(
-            fontSize: 16,
-            color: Color(0xff4a4a4a),
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 10),
-          child: Text(
-            resource.description,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xff9b9b9b),
-            ),
-          ),
-        ),
-      ],
-    );
-    return Tapped(
-      child: Container(
-        color: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 12),
-        width: double.infinity,
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 66,
-              constraints: BoxConstraints(
-                minWidth: 66,
-                minHeight: 88,
-              ),
-              margin: EdgeInsets.fromLTRB(12, 10, 12, 10),
-              child: Image.network(resource.image),
-            ),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Color(0xfff5f5f4))),
-                ),
-                child: info,
-              ),
-            ),
-          ],
-        ),
-      ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return VideoPage(
-            resource: resource,
-          );
-        }));
-      },
     );
   }
 }

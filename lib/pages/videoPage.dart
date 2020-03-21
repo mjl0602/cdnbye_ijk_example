@@ -1,6 +1,8 @@
 import 'package:cdnbye/cdnbye.dart';
 import 'package:cdnbye_ijk_example/global/p2pListener.dart';
 import 'package:cdnbye_ijk_example/model/videoResource.dart';
+import 'package:cdnbye_ijk_example/style/color.dart';
+import 'package:cdnbye_ijk_example/style/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:tapped/tapped.dart';
@@ -34,7 +36,10 @@ class _VideoPageState extends State<VideoPage> {
     });
     var sourceUrl = widget.resource.url;
     var url = await Cdnbye.parseStreamURL(sourceUrl);
-    controller.setDataSource(DataSource.network(url));
+    controller.setAutoPlay();
+    await controller.setDataSource(DataSource.network(url));
+    await controller.play();
+    setState(() {});
   }
 
   @override
@@ -52,8 +57,8 @@ class _VideoPageState extends State<VideoPage> {
       controllerWidgetBuilder: (mediaController) {
         return DefaultIJKControllerWidget(
           controller: controller,
+          doubleTapPlay: true,
           fullScreenType: FullScreenType.rotateScreen,
-          playWillPauseOther: true,
           onFullScreen: (fullScreen) {
             if (fullScreen) {
               setLandScapeLeft();
@@ -144,6 +149,7 @@ class _VideoPageState extends State<VideoPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.resource.title),
+        actions: <Widget>[],
       ),
       body: ListView(
         children: <Widget>[
@@ -311,7 +317,12 @@ class OneInfo extends StatelessWidget {
                 ),
               ),
             ),
-            Text(value),
+            StText.small(
+              value,
+              style: TextStyle(
+                color: ColorPlate.darkGray,
+              ),
+            ),
           ],
         ),
       ),

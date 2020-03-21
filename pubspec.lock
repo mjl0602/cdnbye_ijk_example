@@ -32,10 +32,12 @@ packages:
   cdnbye:
     dependency: "direct main"
     description:
-      path: "/Users/majialun/Desktop/code/P2P-Engine/flutter-p2p-engine"
-      relative: false
-    source: path
-    version: "0.5.0"
+      path: "."
+      ref: HEAD
+      resolved-ref: "942664ca82c885726cf1caed4cd3fb0bb7418504"
+      url: "https://github.com/cdnbye/flutter-p2p-engine.git"
+    source: git
+    version: "0.6.0"
   charcode:
     dependency: transitive
     description:
@@ -95,6 +97,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.4"
+  left_scroll_actions:
+    dependency: "direct main"
+    description:
+      name: left_scroll_actions
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.4"
   local_cache_sync:
     dependency: "direct main"
     description:
