@@ -11,16 +11,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:tapped/tapped.dart';
 
-class VideoPage extends StatefulWidget {
-  final VideoResource resource;
-
-  const VideoPage({Key key, this.resource}) : super(key: key);
+class VideoSwitchPage extends StatefulWidget {
+  const VideoSwitchPage({Key key}) : super(key: key);
   @override
-  _VideoPageState createState() => _VideoPageState();
+  _VideoSwitchPageState createState() => _VideoSwitchPageState();
 }
 
-class _VideoPageState extends State<VideoPage> {
-  var controller = IjkMediaController();
+class _VideoSwitchPageState extends State<VideoSwitchPage> {
+  List<VideoResource> _list = [];
+  int index = 0;
+
+  VideoResource get currentResource => _list[index];
 
   // 监听p2p数据
   P2pListener listener = P2pListener();
@@ -28,105 +29,112 @@ class _VideoPageState extends State<VideoPage> {
   Orientation get orientation => MediaQuery.of(context).orientation;
 
   @override
+  void reassemble() {
+    init();
+    super.reassemble();
+  }
+
+  @override
   void initState() {
     init();
     super.initState();
-    portraitUp();
   }
 
   init() async {
     listener.startListen(() {
       setState(() {});
     });
-    var sourceUrl = widget.resource.url;
-    var url = await Cdnbye.parseStreamURL(sourceUrl);
-    await controller.setDataSource(DataSource.network(url), autoPlay: true);
+    _list = VideoResource.all();
+    for (var videoInfo in _list) {
+      videoInfo.controller = IjkMediaController();
+    }
+    loadVideo();
     setState(() {});
+  }
+
+  loadVideo() async {
+    await currentResource.controller
+        .setNetworkDataSource(currentResource.url, autoPlay: true);
+    await currentResource.controller.pauseOtherController();
+  }
+
+  pauseVideo() async {
+    await currentResource.controller.seekTo(0);
+    await currentResource.controller.pause();
+  }
+
+  last() async {
+    print('switch to last from $index');
+    await pauseVideo();
+    index--;
+    await loadVideo();
+    print('end switch to last from $index');
+  }
+
+  next() async {
+    print('switch to next from $index');
+    await pauseVideo();
+    index++;
+    await loadVideo();
+    print('end switch to next from $index');
   }
 
   @override
   void dispose() {
     listener.dispose();
-    controller.dispose();
-    unlockOrientation();
+    for (var videoInfo in _list) {
+      videoInfo.controller?.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var player = IjkPlayer(
-      mediaController: controller,
-      controllerWidgetBuilder: (mediaController) {
-        return DefaultIJKControllerWidget(
-          controller: controller,
-          doubleTapPlay: true,
-          fullScreenType: FullScreenType.rotateScreen,
-          onFullScreen: (fullScreen) {
-            if (fullScreen) {
-              if (UserDefault.landscapeLeft.value) {
-                setLandScapeLeft();
-              } else {
-                setLandScapeRight();
-              }
-            } else {
-              portraitUp();
-            }
+    var players = <Widget>[];
+    for (var videoInfo in _list) {
+      Widget player = Container();
+      if (videoInfo.controller == null) {
+        player = Text('null');
+      } else {
+        player = IjkPlayer(
+          mediaController: videoInfo.controller,
+          controllerWidgetBuilder: (mediaController) {
+            return Container(); // 自定义
           },
-        ); // 自定义
-      },
-    );
-    // 横屏模式
-    if (orientation == Orientation.landscape) {
-      return WillPopScope(
-        child: Scaffold(
-          body: player,
+          statusWidgetBuilder: (_, __, ___) => Container(),
+        );
+      }
+      players.add(
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 60, vertical: 4),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              color: Colors.black.withOpacity(0.3),
+              height: 80,
+              child: player,
+            ),
+          ),
         ),
-        onWillPop: () async {
-          if (orientation == Orientation.landscape) {
-            portraitUp();
-            return false;
-          }
-          return true;
-        },
       );
     }
+
     // 视频操作
     Widget actions = Row(
       children: <Widget>[
         ActionButton(
           color: Colors.redAccent,
-          icon: Icons.pan_tool,
-          title: 'Stop P2P',
-          onTap: () async {
-            await Cdnbye.stopP2p();
-          },
+          icon: Icons.arrow_upward,
+          title: '上一个',
+          onTap: last,
         ),
         ActionButton(
           color: Colors.green,
-          icon: Icons.cast_connected,
-          title: 'Restart P2P',
-          onTap: () async {
-            await Cdnbye.restartP2p();
-          },
+          icon: Icons.arrow_downward,
+          title: '下一个',
+          onTap: next,
         ),
-        // ActionButton(
-        //   color: Colors.orangeAccent,
-        //   icon: Icons.replay,
-        //   title: 'Replay',
-        //   onTap: () async {
-        //     // position = 0;
-        //     // await vpController.seekTo(Duration(seconds: 0));
-        //     // vpController.play();
-        //   },
-        // ),
-        // ActionButton(
-        //   color: Colors.redAccent,
-        //   icon: Icons.settings_power,
-        //   title: 'Reload',
-        //   onTap: () async {
-        //     // _loadVideo();
-        //   },
-        // ),
       ],
     );
 
@@ -154,69 +162,18 @@ class _VideoPageState extends State<VideoPage> {
     );
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.resource.title),
+        title: Text('Switch Test:${_list.length}'),
         actions: <Widget>[],
       ),
       body: ListView(
         children: <Widget>[
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: player,
+          Column(
+            children: players,
           ),
           actions,
-          Container(height: 8),
-          InfoRow(
-            k1: 'Http Download',
-            v1: listener.httpDownloadedStr,
-            k2: 'Peers',
-            v2: listener.peersStr,
-          ),
-          InfoRow(
-            k1: 'P2P Download',
-            v1: listener.p2pDownloadedStr,
-            k2: 'P2P Upload',
-            v2: listener.p2pUploadedStr,
-          ),
-          InfoRow(
-            k1: 'SDK Version',
-            v1: listener.version,
-            k2: 'P2P Connected',
-            v2: listener.connected ? 'YES' : 'NO',
-          ),
         ],
       ),
     );
-  }
-
-  setLandScapeLeft() async {
-    await IjkManager.setLandScape();
-  }
-
-  setLandScapeRight() async {
-    if (Platform.isAndroid) {
-      await SystemChrome.setEnabledSystemUIOverlays([]);
-      await SystemChrome.setPreferredOrientations(
-        [
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ],
-      );
-    } else if (Platform.isIOS) {
-      await IjkManager.setSupportOrientation([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-
-      IjkManager.setCurrentOrientation(DeviceOrientation.landscapeRight);
-    }
-  }
-
-  portraitUp() async {
-    await IjkManager.setPortrait();
-  }
-
-  unlockOrientation() async {
-    await IjkManager.unlockOrientation();
   }
 }
 

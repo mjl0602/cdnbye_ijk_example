@@ -2,6 +2,7 @@ import 'package:cdnbye_ijk_example/model/videoResource.dart';
 import 'package:cdnbye_ijk_example/pages/settingPage.dart';
 import 'package:cdnbye_ijk_example/pages/videoAdd.dart';
 import 'package:cdnbye_ijk_example/pages/videoPage.dart';
+import 'package:cdnbye_ijk_example/pages/videoSwtchPage.dart';
 import 'package:cdnbye_ijk_example/style/color.dart';
 import 'package:cdnbye_ijk_example/style/size.dart';
 import 'package:cdnbye_ijk_example/style/text.dart';
@@ -32,12 +33,22 @@ class _ListPageState extends State<ListPage> {
   @override
   void initState() {
     _list = VideoResource.all();
-    if (_list.length == 0) {
+    if (_list.length < 1) {
       VideoResource(
         title: '豹子头林冲之山神庙',
         url:
             'http://cn6.qxreader.com/hls/20200201/e987a0e00e1a8431ac408032ba023958/1580550680/index.m3u8',
       )..save();
+      // VideoResource(
+      //   title: 'MV_TEST_2',
+      //   url:
+      //       'http://baishan.oversketch.com/2019/12/28/c9f79b2a40534874805af42813fbc7cf.mp4',
+      // )..save();
+      // VideoResource(
+      //   title: 'MV_TEST_3',
+      //   url:
+      //       'http://baishan.oversketch.com/2019/12/28/4ceadf2740d86d8f80aa0d082cfac31f.mp4',
+      // )..save();
     }
     setState(() {
       _list = VideoResource.all();
@@ -123,6 +134,19 @@ class _ListPageState extends State<ListPage> {
               await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => SettingPage(),
+                ),
+              );
+              setState(() {
+                _list = VideoResource.all();
+              });
+            },
+          ),
+          _ActionIconButton(
+            icon: Icons.switch_video,
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => VideoSwitchPage(),
                 ),
               );
               setState(() {

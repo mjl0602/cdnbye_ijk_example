@@ -1,3 +1,4 @@
+import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
 import 'package:safemap/safemap.dart';
 
@@ -7,6 +8,7 @@ class VideoResource {
   final String title;
   // final String description;
   // final String image;
+  IjkMediaController controller;
 
   String get id => title;
 
