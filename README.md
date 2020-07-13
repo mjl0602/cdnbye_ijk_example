@@ -17,6 +17,23 @@ cdnbye的ijk版播放器example。由于ijk的安装远没有官方的videoplaye
 - [ ] 用户设置：是否硬解码
 
 
+# 打包后闪退问题
+
+需要修改buildTypes如下, 禁用混淆与删除无用资源
+
+```
+buildTypes {
+    release {
+        // TODO: Add your own signing config for the release build.
+        // Signing with the debug keys for now, so `flutter run --release` works.
+        signingConfig signingConfigs.debug
+        minifyEnabled false //删除无用代码
+        shrinkResources false //删除无用资源
+    }
+}
+```
+
+
 # ijkplayer
 
 [![pub package](https://img.shields.io/pub/v/flutter_ijkplayer.svg)](https://pub.dartlang.org/packages/flutter_ijkplayer)

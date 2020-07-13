@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.0.2+1
+version: 0.1.0+4
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -27,18 +27,18 @@ dependencies:
   # 本地缓存
   local_cache_sync: ^1.1.0
   # 左滑删除
-  left_scroll_actions: ^1.4.0
+  left_scroll_actions: ^1.5.2
   # 读取写入文件
   path_provider: ^1.4.5
   # dio: ^3.0.5
   # 下拉刷新
   # pull_to_refresh: ^1.5.7
   # 由于网络原因，cdnbye的最新版可能并不能及时上传pub，若要使用最新版，请使用github版本
-  # cdnbye: ^0.4.1
-  cdnbye:
+  cdnbye: ^0.7.0
+  # cdnbye: 
     # path: /Users/majialun/Desktop/code/P2P-Engine/flutter-p2p-engine
-    git:
-      url: https://github.com/cdnbye/flutter-p2p-engine.git
+    # git:
+      # url: https://github.com/cdnbye/flutter-p2p-engine.git
   # 弹窗库
   # oktoast: ^2.2.1
   # 载入动画
