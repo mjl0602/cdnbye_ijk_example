@@ -34,11 +34,12 @@ dependencies:
   # 下拉刷新
   # pull_to_refresh: ^1.5.7
   # 由于网络原因，cdnbye的最新版可能并不能及时上传pub，若要使用最新版，请使用github版本
-  cdnbye: ^0.7.0
-  # cdnbye: 
-    # path: /Users/majialun/Desktop/code/P2P-Engine/flutter-p2p-engine
-    # git:
-      # url: https://github.com/cdnbye/flutter-p2p-engine.git
+  cdnbye: ^0.8.1
+  # cdnbye:
+  # path: /Users/majialun/Desktop/code/P2P-Engine/flutter-p2p-engine
+  #   git:
+  #     url: https://github.com/cdnbye/flutter-p2p-engine.git
+  #     ref: master
   # 弹窗库
   # oktoast: ^2.2.1
   # 载入动画
